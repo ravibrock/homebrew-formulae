@@ -7,7 +7,7 @@ class AutoSelfcontrolRs < Formula
 
   def install
     system "cargo", "build", "--release", "--bin", "auto-selfcontrol-rs"
-    bin.install "target/release/auto-selfcontrol-rs"
+    bin.install "target/release/auto-selfcontrol-rs" => "autosc"
   end
 
   def caveats
@@ -15,9 +15,9 @@ class AutoSelfcontrolRs < Formula
       You need to have SelfControl installed. If it is not, run:
         brew cask install selfcontrol
       On startup, run:
-        auto-selfcontrol-rs --write_example_config
+        autosc --write_example_config
       Then, edit ~/.config/auto-selfcontrol-rs/config.aoml to your liking and run:
-        auto-selfcontrol-rs --deploy
+        autosc --deploy
     EOS
   end
 end
