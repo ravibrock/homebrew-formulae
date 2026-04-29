@@ -14,7 +14,8 @@ class Mousercli < Formula
 
     venv = virtualenv_create(libexec, "python3.12")
 
-    system libexec/"bin/python", "-m", "pip", "install", "-r", buildpath/"requirements.txt"
+    venv.pip_install ["-r", buildpath/"requirements.txt"]
+
     libexec.install "main_cli.py", "core"
 
     (bin/"mouser").write_env_script libexec/"bin/python",
