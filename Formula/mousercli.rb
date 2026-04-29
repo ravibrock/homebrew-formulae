@@ -14,13 +14,9 @@ class Mousercli < Formula
 
     venv = virtualenv_create(libexec, "python3.12")
 
-    # install deps straight from requirements.txt
-    venv.pip_install buildpath/"requirements.txt"
-
-    # install your app code
+    system libexec/"bin/python", "-m", "pip", "install", "-r", buildpath/"requirements.txt"
     libexec.install "main_cli.py", "core"
 
-    # wrapper
     (bin/"mouser").write_env_script libexec/"bin/python",
       "#{libexec}/main_cli.py"
   end
