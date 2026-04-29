@@ -12,23 +12,15 @@ class Mousercli < Formula
   def install
     odie "mousercli is macOS-only" unless OS.mac?
 
-    virtualenv_create(libexec, "python3.12")
-    py = libexec/"bin/python"
+    virtualenv_install_with_resources
 
-    resources.each do |r|
-      system py, "-m", "pip", "install", "--no-deps", r.cached_download
-    end
+    # install your app code into the venv
+    libexec.install "main_cli.py"
+    libexec.install "core"
 
-    app = libexec/"app"
-    app.install "main_cli.py"
-    app.install "core"
-
-    (bin/"mouser").write_text <<~SH
-      #!/bin/bash
-      export PYTHONPATH="#{app}"
-      exec "#{libexec}/bin/python" "#{app}/main_cli.py" "$@"
-    SH
-    chmod 0755, bin/"mouser"
+    # thin wrapper
+    (bin/"mouser").write_env_script libexec/"bin/python",
+      "#{libexec}/main_cli.py"
   end
 
   resource "PyYAML" do
@@ -52,7 +44,7 @@ class Mousercli < Formula
   end
 
   resource "rpds-py" do
-    url "https://files.pythonhosted.org/packages/19/6a/4ba3d0fb7297ebae71171822554abe48d7cab29c28b8f9f2c04b79988c05/rpds_py-0.30.0-cp310-cp310-macosx_11_0_arm64.whl"
+    url "https://files.pythonhosted.org/packages/source/r/rpds-py/rpds_py-0.30.0.tar.gz"
     sha256 "4cc2206b76b4f576934f0ed374b10d7ca5f457858b157ca52064bdfc26b9fc00"
   end
 
@@ -72,17 +64,17 @@ class Mousercli < Formula
   end
 
   resource "pyobjc-core" do
-    url "https://files.pythonhosted.org/packages/64/5a/6b15e499de73050f4a2c88fff664ae154307d25dc04da8fb38998a428358/pyobjc_core-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    url "https://files.pythonhosted.org/packages/64/5a/6b15e499de73050f4a2c88fff664ae154307d25dc04da8fb38998a428358/pyobjc_core-12.1.tar.gz"
     sha256 "818bcc6723561f207e5b5453efe9703f34bc8781d11ce9b8be286bb415eb4962"
   end
 
   resource "pyobjc-framework-Cocoa" do
-    url "https://files.pythonhosted.org/packages/95/bf/ee4f27ec3920d5c6fc63c63e797c5b2cc4e20fe439217085d01ea5b63856/pyobjc_framework_cocoa-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    url "https://files.pythonhosted.org/packages/95/bf/ee4f27ec3920d5c6fc63c63e797c5b2cc4e20fe439217085d01ea5b63856/pyobjc_framework_cocoa-12.1.tar.gz"
     sha256 "547c182837214b7ec4796dac5aee3aa25abc665757b75d7f44f83c994bcb0858"
   end
 
   resource "pyobjc-framework-Quartz" do
-    url "https://files.pythonhosted.org/packages/e9/9b/780f057e5962f690f23fdff1083a4cfda5a96d5b4d3bb49505cac4f624f2/pyobjc_framework_quartz-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    url "https://files.pythonhosted.org/packages/e9/9b/780f057e5962f690f23fdff1083a4cfda5a96d5b4d3bb49505cac4f624f2/pyobjc_framework_quartz-12.1.tar.gz"
     sha256 "7730cdce46c7e985535b5a42c31381af4aa6556e5642dc55b5e6597595e57a16"
   end
 end
