@@ -1,4 +1,4 @@
-class MouserCli < Formula
+class Mousercli < Formula
   include Language::Python::Virtualenv
 
   desc "Headless CLI for Mouser"
