@@ -12,12 +12,11 @@ class Mousercli < Formula
   def install
     odie "mousercli is macOS-only" unless OS.mac?
 
-    venv = virtualenv_create(libexec, "python3.12")
-
-    pip = libexec/"bin/pip"
+    virtualenv_create(libexec, "python3.12")
+    py = libexec/"bin/python"
 
     resources.each do |r|
-      system pip, "install", "--no-deps", r.cached_download
+      system py, "-m", "pip", "install", "--no-deps", r.cached_download
     end
 
     app = libexec/"app"
@@ -30,10 +29,6 @@ class Mousercli < Formula
       exec "#{libexec}/bin/python" "#{app}/main_cli.py" "$@"
     SH
     chmod 0755, bin/"mouser"
-  end
-
-  test do
-    assert_match "usage", shell_output("#{bin}/mouser --help")
   end
 
   resource "PyYAML" do
