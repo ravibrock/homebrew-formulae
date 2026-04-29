@@ -12,9 +12,9 @@ class Mousercli < Formula
   def install
     odie "mousercli is macOS-only" unless OS.mac?
 
-    venv = virtualenv_create(libexec, "python3.12")
+    virtualenv_create(libexec, "python3.12")
 
-    venv.pip_install "-r #{buildpath}/requirements.txt"
+    system libexec/"bin/python", "-m", "pip", "install", "-r", buildpath/"requirements.txt"
 
     libexec.install "main_cli.py", "core"
 
