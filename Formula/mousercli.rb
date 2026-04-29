@@ -4,7 +4,7 @@ class Mousercli < Formula
   desc "Headless CLI for Mouser"
   homepage "https://github.com/ravibrock/Mouser"
   license "MIT"
-  head "https://github.com/ravibrock/Mouser.git", branch: "main"
+  head "https://github.com/ravibrock/Mouser.git", branch: "master"
 
   depends_on "python@3.12"
   depends_on "rust" => :build
