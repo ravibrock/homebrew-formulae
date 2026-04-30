@@ -35,24 +35,24 @@ class Mousercli < Formula
     sha256 "0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326"
   end
 
-  resource "pyobjc-core" do
-    url "https://files.pythonhosted.org/packages/b8/b6/d5612eb40be4fd5ef88c259339e6313f46ba67577a95d86c3470b951fce0/pyobjc_core-12.1.tar.gz"
-    sha256 "2bb3903f5387f72422145e1466b3ac3f7f0ef2e9960afa9bcd8961c5cbf8bd21"
-  end
-
-  resource "pyobjc-framework-cocoa" do
-    url "https://files.pythonhosted.org/packages/02/a3/16ca9a15e77c061a9250afbae2eae26f2e1579eb8ca9462ae2d2c71e1169/pyobjc_framework_cocoa-12.1.tar.gz"
-    sha256 "5556c87db95711b985d5efdaaf01c917ddd41d148b1e52a0c66b1a2e2c5c1640"
-  end
-
-  resource "pyobjc-framework-quartz" do
-    url "https://files.pythonhosted.org/packages/94/18/cc59f3d4355c9456fc945eae7fe8797003c4da99212dd531ad1b0de8a0c6/pyobjc_framework_quartz-12.1.tar.gz"
-    sha256 "27f782f3513ac88ec9b6c82d9767eef95a5cf4175ce88a1e5a65875fee799608"
-  end
-
   resource "pyyaml" do
     url "https://files.pythonhosted.org/packages/05/8e/961c0007c59b8dd7729d542c61a4d537767a59645b82a0b521206e1e25c2/pyyaml-6.0.3.tar.gz"
     sha256 "d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f"
+  end
+
+  resource "pyobjc-core" do
+    url "https://files.pythonhosted.org/packages/64/5a/6b15e499de73050f4a2c88fff664ae154307d25dc04da8fb38998a428358/pyobjc_core-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    sha256 "818bcc6723561f207e5b5453efe9703f34bc8781d11ce9b8be286bb415eb4962"
+  end
+
+  resource "pyobjc-framework-Cocoa" do
+    url "https://files.pythonhosted.org/packages/95/bf/ee4f27ec3920d5c6fc63c63e797c5b2cc4e20fe439217085d01ea5b63856/pyobjc_framework_cocoa-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    sha256 "547c182837214b7ec4796dac5aee3aa25abc665757b75d7f44f83c994bcb0858"
+  end
+
+  resource "pyobjc-framework-Quartz" do
+    url "https://files.pythonhosted.org/packages/e9/9b/780f057e5962f690f23fdff1083a4cfda5a96d5b4d3bb49505cac4f624f2/pyobjc_framework_quartz-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    sha256 "7730cdce46c7e985535b5a42c31381af4aa6556e5642dc55b5e6597595e57a16"
   end
 
   resource "referencing" do
@@ -71,10 +71,38 @@ class Mousercli < Formula
   end
 
   def install
-    virtualenv_install_with_resources
+    venv_root = libexec/"venv"
+    source_root = libexec/"src"
+    venv = virtualenv_create(venv_root, "python3.12")
+
+    python_resources = resources.to_a.reject do |resource|
+      %w[pyobjc-core pyobjc-framework-Cocoa pyobjc-framework-Quartz].include?(resource.name)
+    end
+    venv.pip_install python_resources
+
+    pyobjc_core_wheel = buildpath/"pyobjc_core-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    pyobjc_cocoa_wheel = buildpath/"pyobjc_framework_cocoa-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    pyobjc_quartz_wheel = buildpath/"pyobjc_framework_quartz-12.1-cp312-cp312-macosx_10_13_universal2.whl"
+    cp resource("pyobjc-core").cached_download, pyobjc_core_wheel
+    cp resource("pyobjc-framework-Cocoa").cached_download, pyobjc_cocoa_wheel
+    cp resource("pyobjc-framework-Quartz").cached_download, pyobjc_quartz_wheel
+
+    venv.pip_install pyobjc_core_wheel
+    venv.pip_install pyobjc_cocoa_wheel
+    venv.pip_install pyobjc_quartz_wheel
+
+    source_root.install buildpath.children
+
+    (bin/"mousercli").write <<~EOS
+      #!/bin/bash
+      export PYTHONPATH="#{source_root}:$PYTHONPATH"
+      exec "#{venv_root}/bin/python" "#{source_root}/main_cli.py" "$@"
+    EOS
+    (bin/"mousercli").chmod 0555
   end
 
   test do
-    system Formula["python@3.12"].opt_bin/"python3", "-c", "import Quartz, yaml"
+    output = shell_output("#{bin}/mousercli export")
+    assert_match "\"profiles\"", output
   end
 end
